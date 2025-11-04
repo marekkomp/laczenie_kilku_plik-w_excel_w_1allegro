@@ -6,10 +6,8 @@
 - Kolejność kolumn = dokładnie kolejność z PIERWSZEGO pliku.
 - Jeśli kolejne pliki mają dodatkowe kolumny, są DOPISYWANE na końcu.
 - Brakujące kolumny w danym pliku są dodawane z pustą wartością.
-- Zero „kanonicznych” nazw, zero fuzzy/deduplikacji – czyste scalenie po NAZWACH nagłówków.
-- Eksport do CSV i XLSX.
-
-Uwaga: Pandas wczytuje wszystko jako tekst (dtype=str), żeby nie psuć wartości.
+- Zero „kanonicznych” nazw, zero fuzzy/deduplikacji – scalenie po NAZWACH nagłówków.
+- Eksport do CSV i XLSX (w XLSX nagłówki w wierszu 4).
 """
 
 import io
@@ -81,7 +79,7 @@ st.subheader("Podgląd (pierwsze 200 wierszy)")
 st.dataframe(merged.head(200), use_container_width=True)
 
 st.markdown("### Eksport")
-# CSV
+# CSV (standardowo od wiersza 1)
 csv_bytes = merged.to_csv(index=False).encode("utf-8-sig")
 st.download_button(
     "Pobierz CSV",
@@ -90,10 +88,11 @@ st.download_button(
     mime="text/csv",
 )
 
-# XLSX (z jedną zakładką)
+# XLSX (z jedną zakładką) — nagłówki w WIERSZU 4 (startrow=3)
 output = io.BytesIO()
 with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-    merged.to_excel(writer, index=False, sheet_name="merged")
+    # startrow=3 -> trzy puste wiersze, nagłówki od 4.
+    merged.to_excel(writer, index=False, sheet_name="merged", startrow=3)
 
 st.download_button(
     "Pobierz XLSX",
